@@ -1,66 +1,92 @@
-{% extends "base.html" %} {% block title %}All Activities - LMS Activity
-Monitor{% endblock %} {% block content %}
-<div class="page-header">
-  <h1>📋 All Activities</h1>
-  <p>Showing recent activities across all courses</p>
-</div>
-
-{% if activities %}
-<div class="activities-list">
-  {% for activity in activities %}
-  <div class="activity-list-item {% if activity.is_new %}new{% endif %}">
-    <div class="activity-icon">
-      {% if activity.activity_type == 'assign' %}
-      <i class="fas fa-file-alt"></i>
-      {% elif activity.activity_type == 'quiz' %}
-      <i class="fas fa-question-circle"></i>
-      {% elif activity.activity_type == 'resource' %}
-      <i class="fas fa-file"></i>
-      {% elif activity.activity_type == 'forum' %}
-      <i class="fas fa-comments"></i>
-      {% else %}
-      <i class="fas fa-book-open"></i>
-      {% endif %}
+{% extends "base.html" %} {% block title %}All Activities - LMS Monitor{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">All Activities</h1>
+      <p class="page-subtitle">Recent updates from all your courses.</p>
     </div>
-    <div class="activity-content">
-      <div class="activity-header">
-        <span class="activity-type">{{ activity.activity_type }}</span>
-        {% if activity.is_new %}
-        <span class="badge badge-new">NEW</span>
+  </div>
+
+  {% if activities %}
+  <div class="glass-panel" style="padding: 1.5rem">
+    <div class="glass-list">
+      {% for activity in activities %}
+      <div class="list-item">
+        <div class="stat-icon" style="width: 48px; height: 48px; font-size: 1.1rem">
+          {% if activity.activity_type == 'assign' %}
+          <i class="fas fa-file-contract"></i>
+          {% elif activity.activity_type == 'quiz' %}
+          <i class="fas fa-puzzle-piece"></i>
+          {% elif activity.activity_type == 'url' %}
+          <i class="fas fa-link"></i>
+          {% elif activity.activity_type == 'forum' %}
+          <i class="fas fa-comments"></i>
+          {% else %}
+          <i class="fas fa-book-open"></i>
+          {% endif %}
+        </div>
+        <div style="flex: 1">
+          <div style="display: flex; align-items: center; gap: 0.5rem">
+            <h4 style="margin-bottom: 0.25rem; font-size: 1.1rem">
+              {{ activity.title }}
+            </h4>
+            {% if activity.is_new %}
+            <span class="badge badge-new">New</span>
+            {% endif %}
+          </div>
+
+          <div class="activity-meta">
+            <span class="meta-item">
+              <i class="fas fa-book"></i> {{ activity.course_name }}
+              <span class="badge" style="
+                  background: rgba(255, 255, 255, 0.1);
+                  margin-left: 5px;
+                  font-size: 0.65rem;
+                ">{{ activity.lms_name }}</span>
+            </span>
+            <span class="meta-item">
+              <i class="fas fa-tag"></i> {{ activity.activity_type }}
+            </span>
+            {% if activity.deadline %}
+            <span class="meta-item" style="color: var(--warning-color)">
+              <i class="fas fa-hourglass-half"></i> {{ activity.deadline }}
+            </span>
+            {% endif %}
+            <span class="meta-item">
+              <i class="fas fa-clock"></i> {{ activity.first_seen|timeago }}
+            </span>
+          </div>
+
+          {% if activity.description %}
+          <p style="
+              margin-top: 0.5rem;
+              font-size: 0.9rem;
+              color: var(--text-muted);
+              line-height: 1.5;
+            ">
+            {{ activity.description[:200] }}
+            {% if activity.description|length > 200 %}...{% endif %}
+          </p>
+          {% endif %}
+        </div>
+
+        {% if activity.url %}
+        <a href="{{ activity.url }}" target="_blank" class="btn btn-secondary btn-small" style="align-self: center">
+          View <i class="fas fa-external-link-alt" style="margin-left: 5px"></i>
+        </a>
         {% endif %}
       </div>
-      <h3>{{ activity.title }}</h3>
-      <p class="activity-course">
-        <i class="fas fa-book"></i> {{ activity.course_name }}
-        <span class="lms-badge">{{ activity.lms_name }}</span>
-      </p>
-      {% if activity.deadline %}
-      <p class="activity-deadline">
-        <i class="fas fa-clock"></i> Deadline: {{ activity.deadline }}
-      </p>
-      {% endif %} {% if activity.description %}
-      <p class="activity-description">
-        {{ activity.description[:200] }}{% if activity.description|length > 200
-        %}...{% endif %}
-      </p>
-      {% endif %}
-      <p class="activity-time">{{ activity.first_seen|timeago }}</p>
+      {% endfor %}
     </div>
-    {% if activity.url %}
-    <div class="activity-actions">
-      <a href="{{ activity.url }}" target="_blank" class="btn btn-small">
-        <i class="fas fa-external-link-alt"></i> View
-      </a>
-    </div>
-    {% endif %}
   </div>
-  {% endfor %}
+  {% else %}
+  <div class="glass-panel empty-state">
+    <i class="fas fa-tasks"></i>
+    <h2>No Activities Found</h2>
+    <p>No activities have been tracked yet. Run a scan to get started!</p>
+    <a href="/" class="btn btn-primary" style="margin-top: 1rem">Go to Dashboard</a>
+  </div>
+  {% endif %}
 </div>
-{% else %}
-<div class="empty-state-large">
-  <i class="fas fa-tasks"></i>
-  <h2>No Activities Found</h2>
-  <p>No activities have been tracked yet. Run a scan to get started!</p>
-  <a href="/" class="btn btn-primary">Go to Dashboard</a>
-</div>
-{% endif %} {% endblock %}
+{% endblock %}

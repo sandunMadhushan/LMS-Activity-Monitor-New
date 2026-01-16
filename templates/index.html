@@ -1,703 +1,361 @@
-{% extends "base.html" %} {% block title %}Dashboard - LMS Activity Monitor{%
-endblock %} {% block content %}
-<div class="dashboard">
+{% extends "base.html" %} {% block title %}Dashboard - LMS Monitor{% endblock %}
+{% block content %}
+<div class="dashboard-container">
+  <!-- Page Header -->
   <div class="page-header">
-    <h1>📊 Dashboard</h1>
-    <div class="actions">
-      <button
-        onclick="syncCalendar()"
-        class="btn btn-primary"
-        title="Auto-syncs daily at 9 AM & 9 PM"
-      >
-        <i class="fas fa-calendar-check"></i> Sync Calendar
-        <span style="font-size: 0.7em; opacity: 0.8">🕒 Auto</span>
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Welcome back! Here's your academic overview.</p>
+    </div>
+    <div class="actions" style="display: flex; gap: 1rem">
+      <button onclick="syncCalendar()" class="btn btn-primary">
+        <i class="fas fa-sync-alt"></i> Sync Calendar
       </button>
       {% if is_render %}
-      <button class="btn btn-secondary" disabled title="Scanning is automated via GitHub Actions (runs twice daily)">
-        <i class="fas fa-sync"></i> Auto Scan (GitHub Actions)
+      <button class="btn btn-secondary" disabled title="Automated on Cloud">
+        <i class="fas fa-robot"></i> Auto Scan Active
       </button>
       {% else %}
       <button onclick="triggerScan()" class="btn btn-primary">
-        <i class="fas fa-sync"></i> Run Scan Now
+        <i class="fas fa-search"></i> Scan Now
       </button>
       {% endif %}
-      <button onclick="testEmail()" class="btn btn-secondary">
-        <i class="fas fa-envelope"></i> Test Email
-      </button>
-      <button onclick="testNtfy()" class="btn btn-secondary">
-        <i class="fas fa-mobile-alt"></i> Test Mobile
-      </button>
     </div>
   </div>
 
+  <!-- Stats Grid -->
   <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #667eea">
-        <i class="fas fa-book"></i>
-      </div>
-      <div class="stat-content">
+    <div class="glass-panel stat-card">
+      <div class="stat-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div class="stat-info">
         <h3>{{ stats.total_courses }}</h3>
         <p>Total Courses</p>
-        <small
-          >OUSL: {{ stats.ousl_courses }} | RUSL: {{ stats.rusl_courses
-          }}</small
-        >
       </div>
     </div>
-
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #764ba2">
+    <div class="glass-panel stat-card">
+      <div class="stat-icon" style="color: var(--secondary-color)">
         <i class="fas fa-tasks"></i>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <h3>{{ stats.total_activities }}</h3>
-        <p>Total Activities</p>
+        <p>Activities Found</p>
       </div>
     </div>
-
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #f093fb">
+    <div class="glass-panel stat-card">
+      <div class="stat-icon" style="color: var(--accent-color)">
         <i class="fas fa-bell"></i>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <h3 id="new-activities-count">{{ stats.new_activities }}</h3>
-        <p>New Activities</p>
+        <p>New Updates</p>
       </div>
     </div>
-
-    <div class="stat-card">
-      <div class="stat-icon" style="background: #4facfe">
+    <div class="glass-panel stat-card">
+      <div class="stat-icon" style="color: var(--success-color)">
         <i class="fas fa-clock"></i>
       </div>
-      <div class="stat-content">
+      <div class="stat-info">
         <h3>
           {{ stats.last_scan_time|timeago if stats.last_scan_time else 'Never'
           }}
         </h3>
-        <p>Last Scan</p>
+        <p>Last Activity Scan</p>
       </div>
     </div>
   </div>
 
-  <!-- Scheduler Info -->
-  <div
-    class="alert alert-success"
-    style="
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-    "
-  >
-    <i class="fas fa-clock"></i>
-    <strong>📅 Automatic Calendar Sync:</strong> Calendar events are
-    automatically synced daily at <strong>9:00 AM</strong> and
-    <strong>9:00 PM</strong>.
-  </div>
-
-  {% if stats.new_activities > 0 %}
-  <div class="alert alert-info">
-    <i class="fas fa-info-circle"></i>
-    <strong>You have {{ stats.new_activities }} new activities!</strong> Check
-    your email or view them below.
-  </div>
-  {% endif %}
-
-  <!-- Upcoming Deadlines Section - Tabbed by University -->
-  {% if upcoming_deadlines %}
-  <div class="card deadline-card">
-    <div
-      class="card-header"
-      style="display: flex; justify-content: space-between; align-items: center"
-    >
-      <h2><i class="fas fa-exclamation-triangle"></i> Upcoming Deadlines</h2>
-      <div class="deadline-filter">
-        <button
-          class="filter-btn active"
-          onclick="filterDeadlines(30)"
-          data-days="30"
-        >
-          <i class="fas fa-calendar-day"></i> Next 30 Days
+  <div class="dashboard-grid">
+    <!-- Main Column: Activities -->
+    <div class="glass-panel">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="openTab(event, 'all-activities')">
+          All Activities
         </button>
-        <button class="filter-btn" onclick="filterDeadlines(0)" data-days="0">
-          <i class="fas fa-calendar"></i> All Upcoming
+        <button class="tab-btn" onclick="openTab(event, 'ousl-activities')">
+          OUSL
         </button>
-      </div>
-    </div>
-    <div class="card-body">
-      <!-- Tabs for OUSL and RUSL -->
-      <div class="tabs">
-        <button
-          class="tab-button active"
-          onclick="switchDeadlineTab(event, 'ousl-deadlines')"
-        >
-          <i class="fas fa-university"></i> OUSL
-          <span class="tab-count" id="ousl-count">
-            {{ upcoming_deadlines|selectattr('lms_name', 'equalto',
-            'OUSL')|list|length }}
-          </span>
-        </button>
-        <button
-          class="tab-button"
-          onclick="switchDeadlineTab(event, 'rusl-deadlines')"
-        >
-          <i class="fas fa-university"></i> RUSL
-          <span class="tab-count" id="rusl-count">
-            {{ upcoming_deadlines|selectattr('lms_name', 'equalto',
-            'RUSL')|list|length }}
-          </span>
+        <button class="tab-btn" onclick="openTab(event, 'rusl-activities')">
+          RUSL
         </button>
       </div>
 
-      <!-- OUSL Deadlines -->
-      <div id="ousl-deadlines" class="tab-content active">
-        <div class="deadline-list">
-          {% for activity in upcoming_deadlines %} {% if activity.lms_name ==
-          'OUSL' %}
-          <div
-            class="deadline-item {% if activity.is_new %}new{% endif %}"
-            data-deadline-date="{{ activity.deadline_date }}"
-          >
-            <div class="deadline-date">
-              <div class="date-icon">
-                <i class="fas fa-calendar-alt"></i>
-              </div>
-              <div class="date-text">
-                <strong
-                  >{{ activity.deadline_date|datetime('%b %d, %Y') }}</strong
-                >
-                {% if activity.source == 'scraped' %}
-                <small>All day</small>
+      <div class="card-body" style="padding: 1.5rem">
+        <!-- ALL ACTIVITIES TAB -->
+        <div id="all-activities" class="tab-content active">
+          {% if recent_activities %}
+          <div class="glass-list">
+            {% for activity in recent_activities %}
+            <div class="list-item">
+              <div class="stat-icon" style="width: 40px; height: 40px; font-size: 1rem">
+                {% if activity.activity_type == 'assign' %}
+                <i class="fas fa-file-contract"></i>
+                {% elif activity.activity_type == 'quiz' %}
+                <i class="fas fa-puzzle-piece"></i>
+                {% elif activity.activity_type == 'url' %}
+                <i class="fas fa-link"></i>
                 {% else %}
-                <small>{{ activity.deadline_date|datetime('%I:%M %p') }}</small>
+                <i class="fas fa-book-open"></i>
                 {% endif %}
               </div>
-            </div>
-            <div class="deadline-content">
-              {% if activity.source %}
-              <span
-                class="activity-type"
-                style="background: {% if activity.source == 'calendar' %}#667eea{% else %}#764ba2{% endif %}"
-              >
-                {{ activity.source|capitalize }}
-              </span>
-              {% elif activity.activity_type %}
-              <span class="activity-type">{{ activity.activity_type }}</span>
-              {% endif %}
-              <h4>{{ activity.title }}</h4>
-              {% if activity.course_name %}
-              <p class="activity-course">
-                <i class="fas fa-book"></i> {{ activity.course_name }}
-              </p>
-              {% endif %} {% if activity.location %}
-              <p class="activity-location">
-                <i class="fas fa-map-marker-alt"></i> {{ activity.location }}
-              </p>
-              {% endif %}
-            </div>
-            {% if activity.url %}
-            <a href="{{ activity.url }}" target="_blank" class="btn btn-small">
-              <i class="fas fa-external-link-alt"></i> View
-            </a>
-            {% endif %}
-          </div>
-          {% endif %} {% endfor %}
-        </div>
-        {% if upcoming_deadlines|selectattr('lms_name', 'equalto',
-        'OUSL')|list|length == 0 %}
-        <div class="empty-state">
-          <i class="fas fa-check-circle"></i>
-          <p>No upcoming deadlines for OUSL</p>
-        </div>
-        {% endif %}
-      </div>
-
-      <!-- RUSL Deadlines -->
-      <div id="rusl-deadlines" class="tab-content">
-        <div class="deadline-list">
-          {% for activity in upcoming_deadlines %} {% if activity.lms_name ==
-          'RUSL' %}
-          <div
-            class="deadline-item {% if activity.is_new %}new{% endif %}"
-            data-deadline-date="{{ activity.deadline_date }}"
-          >
-            <div class="deadline-date">
-              <div class="date-icon">
-                <i class="fas fa-calendar-alt"></i>
+              <div style="flex: 1">
+                <h4 style="margin-bottom: 0.25rem">{{ activity.title }}</h4>
+                <div class="activity-meta">
+                  <span class="meta-item">
+                    <i class="fas fa-book"></i> {{ activity.course_name }}
+                    <span class="badge" style="background: rgba(255,255,255,0.1); margin-left: 5px">{{ activity.lms_name
+                      }}</span>
+                  </span>
+                  {% if activity.deadline %}
+                  <span class="meta-item" style="color: var(--warning-color)">
+                    <i class="fas fa-hourglass-half"></i> {{ activity.deadline
+                    }}
+                  </span>
+                  {% endif %}
+                </div>
               </div>
-              <div class="date-text">
-                <strong
-                  >{{ activity.deadline_date|datetime('%b %d, %Y') }}</strong
-                >
-                {% if activity.source == 'scraped' %}
-                <small>All day</small>
-                {% else %}
-                <small>{{ activity.deadline_date|datetime('%I:%M %p') }}</small>
-                {% endif %}
-              </div>
-            </div>
-            <div class="deadline-content">
-              {% if activity.source %}
-              <span
-                class="activity-type"
-                style="background: {% if activity.source == 'calendar' %}#667eea{% else %}#764ba2{% endif %}"
-              >
-                {{ activity.source|capitalize }}
-              </span>
-              {% elif activity.activity_type %}
-              <span class="activity-type">{{ activity.activity_type }}</span>
-              {% endif %}
-              <h4>{{ activity.title }}</h4>
-              {% if activity.course_name %}
-              <p class="activity-course">
-                <i class="fas fa-book"></i> {{ activity.course_name }}
-              </p>
-              {% endif %} {% if activity.location %}
-              <p class="activity-location">
-                <i class="fas fa-map-marker-alt"></i> {{ activity.location }}
-              </p>
+              {% if activity.is_new %}
+              <span class="badge badge-new">New</span>
+              {% endif %} {% if activity.url %}
+              <a href="{{ activity.url }}" target="_blank" class="btn btn-secondary btn-small">
+                <i class="fas fa-external-link-alt"></i>
+              </a>
               {% endif %}
             </div>
-            {% if activity.url %}
-            <a href="{{ activity.url }}" target="_blank" class="btn btn-small">
-              <i class="fas fa-external-link-alt"></i> View
-            </a>
-            {% endif %}
+            {% endfor %}
           </div>
-          {% endif %} {% endfor %}
-        </div>
-        {% if upcoming_deadlines|selectattr('lms_name', 'equalto',
-        'RUSL')|list|length == 0 %}
-        <div class="empty-state">
-          <i class="fas fa-check-circle"></i>
-          <p>No upcoming deadlines for RUSL</p>
-        </div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-  {% endif %}
-
-  <!-- Tabbed Activities Section -->
-  <div class="card">
-    <div class="card-header">
-      <h2>
-        <i class="fas fa-graduation-cap"></i> Recent Activities by University
-      </h2>
-    </div>
-    <div class="tabs">
-      <button class="tab-button active" onclick="openTab(event, 'ousl')">
-        <i class="fas fa-university"></i> OUSL ({{ ousl_activities|length }})
-      </button>
-      <button class="tab-button" onclick="openTab(event, 'rusl')">
-        <i class="fas fa-university"></i> Rajarata ({{ rusl_activities|length
-        }})
-      </button>
-      <button class="tab-button" onclick="openTab(event, 'all')">
-        <i class="fas fa-list"></i> All Activities
-      </button>
-    </div>
-
-    <!-- OUSL Tab -->
-    <div id="ousl" class="tab-content active">
-      <div class="card-body">
-        {% if ousl_activities %}
-        <div class="activity-list">
-          {% for activity in ousl_activities %}
-          <div class="activity-item {% if activity.is_new %}new{% endif %}">
-            <div class="activity-icon">
-              {% if activity.activity_type == 'assign' %}
-              <i class="fas fa-file-alt"></i>
-              {% elif activity.activity_type == 'quiz' %}
-              <i class="fas fa-question-circle"></i>
-              {% elif activity.activity_type == 'resource' %}
-              <i class="fas fa-file"></i>
-              {% elif activity.activity_type == 'forum' %}
-              <i class="fas fa-comments"></i>
-              {% else %}
-              <i class="fas fa-book-open"></i>
-              {% endif %}
-            </div>
-            <div class="activity-content">
-              <div class="activity-header">
-                <span class="activity-type">{{ activity.activity_type }}</span>
-                {% if activity.is_new %}
-                <span class="badge badge-new">NEW</span>
-                {% endif %}
-              </div>
-              <h4>{{ activity.title }}</h4>
-              <p class="activity-course">
-                <i class="fas fa-book"></i> {{ activity.course_name }}
-              </p>
-              {% if activity.deadline %}
-              <p class="activity-deadline">
-                <i class="fas fa-clock"></i> Deadline: {{ activity.deadline }}
-              </p>
-              {% endif %}
-              <p class="activity-time">{{ activity.first_seen|timeago }}</p>
-            </div>
-            {% if activity.url %}
-            <a href="{{ activity.url }}" target="_blank" class="btn btn-small">
-              <i class="fas fa-external-link-alt"></i> View
-            </a>
-            {% endif %}
+          {% else %}
+          <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <p>No recent activities found.</p>
           </div>
-          {% endfor %}
+          {% endif %}
         </div>
-        <div style="text-align: center; margin-top: 1rem">
-          <a href="/courses?lms=OUSL" class="btn btn-secondary"
-            >View All OUSL Courses</a
-          >
+
+        <!-- OUSL TAB -->
+        <div id="ousl-activities" class="tab-content">
+          {% if ousl_activities %}
+          <div class="glass-list">
+            {% for activity in ousl_activities %}
+            <div class="list-item">
+              <div class="stat-icon" style="width: 40px; height: 40px; font-size: 1rem">
+                <i class="fas fa-university"></i>
+              </div>
+              <div style="flex: 1">
+                <h4 style="margin-bottom: 0.25rem">{{ activity.title }}</h4>
+                <div class="activity-meta">
+                  <span class="meta-item"><i class="fas fa-book"></i> {{ activity.course_name
+                    }}</span>
+                  <span class="meta-item"><i class="fas fa-clock"></i> {{
+                    activity.first_seen|timeago }}</span>
+                </div>
+              </div>
+              {% if activity.url %}
+              <a href="{{ activity.url }}" target="_blank" class="btn btn-secondary btn-small">
+                <i class="fas fa-external-link-alt"></i>
+              </a>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="fas fa-wind"></i>
+            <p>No OUSL activities yet.</p>
+          </div>
+          {% endif %}
         </div>
-        {% else %}
-        <p class="empty-state">
-          No OUSL activities found yet. Run a scan to get started!
-        </p>
-        {% endif %}
+
+        <!-- RUSL TAB -->
+        <div id="rusl-activities" class="tab-content">
+          {% if rusl_activities %}
+          <div class="glass-list">
+            {% for activity in rusl_activities %}
+            <div class="list-item">
+              <div class="stat-icon" style="width: 40px; height: 40px; font-size: 1rem">
+                <i class="fas fa-university"></i>
+              </div>
+              <div style="flex: 1">
+                <h4 style="margin-bottom: 0.25rem">{{ activity.title }}</h4>
+                <div class="activity-meta">
+                  <span class="meta-item"><i class="fas fa-book"></i> {{ activity.course_name
+                    }}</span>
+                  <span class="meta-item"><i class="fas fa-clock"></i> {{
+                    activity.first_seen|timeago }}</span>
+                </div>
+              </div>
+              {% if activity.url %}
+              <a href="{{ activity.url }}" target="_blank" class="btn btn-secondary btn-small">
+                <i class="fas fa-external-link-alt"></i>
+              </a>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="fas fa-wind"></i>
+            <p>No RUSL activities yet.</p>
+          </div>
+          {% endif %}
+        </div>
       </div>
     </div>
 
-    <!-- RUSL Tab -->
-    <div id="rusl" class="tab-content">
-      <div class="card-body">
-        {% if rusl_activities %}
-        <div class="activity-list">
-          {% for activity in rusl_activities %}
-          <div class="activity-item {% if activity.is_new %}new{% endif %}">
-            <div class="activity-icon">
-              {% if activity.activity_type == 'assign' %}
-              <i class="fas fa-file-alt"></i>
-              {% elif activity.activity_type == 'quiz' %}
-              <i class="fas fa-question-circle"></i>
-              {% elif activity.activity_type == 'resource' %}
-              <i class="fas fa-file"></i>
-              {% elif activity.activity_type == 'forum' %}
-              <i class="fas fa-comments"></i>
-              {% else %}
-              <i class="fas fa-book-open"></i>
-              {% endif %}
-            </div>
-            <div class="activity-content">
-              <div class="activity-header">
-                <span class="activity-type">{{ activity.activity_type }}</span>
-                {% if activity.is_new %}
-                <span class="badge badge-new">NEW</span>
-                {% endif %}
+    <!-- Right Column: Deadlines -->
+    <div style="display: flex; flex-direction: column; gap: 2rem">
+      <div class="glass-panel">
+        <div style="
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 1.5rem;
+          ">
+          <h3 style="display: flex; align-items: center; gap: 0.5rem">
+            <i class="fas fa-exclamation-triangle" style="color: #f59e0b"></i>
+            Upcoming Deadlines
+          </h3>
+        </div>
+        <div style="padding: 1.5rem">
+          {% if upcoming_deadlines %}
+          <div class="glass-list">
+            {% for deadline in upcoming_deadlines[:5] %}
+            <div class="list-item" style="padding: 1rem">
+              <div style="flex: 1">
+                <p style="
+                    font-size: 0.8rem;
+                    color: var(--warning-color);
+                    margin-bottom: 0.25rem;
+                  ">
+                  <i class="far fa-calendar"></i> {{
+                  deadline.deadline_date|datetime('%b %d') }}
+                </p>
+                <h5 style="margin-bottom: 0.25rem">{{ deadline.title }}</h5>
+                <p style="font-size: 0.8rem; opacity: 0.7">
+                  {{ deadline.course_name }}
+                </p>
               </div>
-              <h4>{{ activity.title }}</h4>
-              <p class="activity-course">
-                <i class="fas fa-book"></i> {{ activity.course_name }}
-              </p>
-              {% if activity.deadline %}
-              <p class="activity-deadline">
-                <i class="fas fa-clock"></i> Deadline: {{ activity.deadline }}
-              </p>
-              {% endif %}
-              <p class="activity-time">{{ activity.first_seen|timeago }}</p>
             </div>
-            {% if activity.url %}
-            <a href="{{ activity.url }}" target="_blank" class="btn btn-small">
-              <i class="fas fa-external-link-alt"></i> View
-            </a>
-            {% endif %}
+            {% endfor %}
           </div>
-          {% endfor %}
+          {% else %}
+          <div class="empty-state" style="padding: 1.5rem">
+            <i class="fas fa-glass-cheers"></i>
+            <p>No upcoming deadlines!</p>
+          </div>
+          {% endif %}
         </div>
-        <div style="text-align: center; margin-top: 1rem">
-          <a href="/courses?lms=RUSL" class="btn btn-secondary"
-            >View All RUSL Courses</a
-          >
-        </div>
-        {% else %}
-        <p class="empty-state">
-          No Rajarata activities found yet. Run a scan to get started!
-        </p>
-        {% endif %}
       </div>
-    </div>
 
-    <!-- All Activities Tab -->
-    <div id="all" class="tab-content">
-      <div class="card-body">
-        {% if recent_activities %}
-        <div class="activity-list">
-          {% for activity in recent_activities %}
-          <div class="activity-item {% if activity.is_new %}new{% endif %}">
-            <div class="activity-icon">
-              {% if activity.activity_type == 'assign' %}
-              <i class="fas fa-file-alt"></i>
-              {% elif activity.activity_type == 'quiz' %}
-              <i class="fas fa-question-circle"></i>
-              {% elif activity.activity_type == 'resource' %}
-              <i class="fas fa-file"></i>
-              {% elif activity.activity_type == 'forum' %}
-              <i class="fas fa-comments"></i>
-              {% else %}
-              <i class="fas fa-book-open"></i>
-              {% endif %}
-            </div>
-            <div class="activity-content">
-              <div class="activity-header">
-                <span class="activity-type">{{ activity.activity_type }}</span>
-                {% if activity.is_new %}
-                <span class="badge badge-new">NEW</span>
-                {% endif %}
-              </div>
-              <h4>{{ activity.title }}</h4>
-              <p class="activity-course">
-                <i class="fas fa-book"></i> {{ activity.course_name }}
-                <span class="lms-badge">{{ activity.lms_name }}</span>
-              </p>
-              {% if activity.deadline %}
-              <p class="activity-deadline">
-                <i class="fas fa-clock"></i> Deadline: {{ activity.deadline }}
-              </p>
-              {% endif %}
-              <p class="activity-time">{{ activity.first_seen|timeago }}</p>
-            </div>
-            {% if activity.url %}
-            <a href="{{ activity.url }}" target="_blank" class="btn btn-small">
-              <i class="fas fa-external-link-alt"></i> View
-            </a>
-            {% endif %}
-          </div>
-          {% endfor %}
+      <!-- Scan History -->
+      <div class="glass-panel">
+        <div style="
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 1.5rem;
+          ">
+          <h3 style="display: flex; align-items: center; gap: 0.5rem">
+            <i class="fas fa-history" style="color: var(--secondary-color)"></i>Scan History
+          </h3>
         </div>
-        <div style="text-align: center; margin-top: 1rem">
-          <a href="/activities" class="btn btn-secondary"
-            >View All Activities</a
-          >
-        </div>
-        {% else %}
-        <p class="empty-state">
-          No activities found yet. Run a scan to get started!
-        </p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-  <!-- Scan History (Sidebar) -->
-  <div class="card">
-    <div class="card-header">
-      <h2><i class="fas fa-history"></i> Scan History</h2>
-    </div>
-    <div class="card-body">
-      {% if scan_history %}
-      <div class="scan-history">
-        {% for scan in scan_history %}
-        <div class="scan-item">
-          <div class="scan-time">
-            {{ scan.scan_time|datetime('%b %d, %H:%M') }}
-          </div>
-          <div class="scan-info">
-            <strong>{{ scan.lms_name }}</strong>
-            <span class="scan-stats">
-              {{ scan.courses_found }} courses, {{ scan.new_activities }} new
+        <div style="padding: 1rem">
+          {% if scan_history %} {% for scan in scan_history %}
+          <div style="
+              display: flex;
+              justify-content: space-between;
+              font-size: 0.85rem;
+              padding: 0.5rem 0;
+              border-bottom: 1px solid var(--glass-border);
+            ">
+            <span>{{ scan.scan_time|timeago }}</span>
+            <span style="
+                color: {% if scan.status == 'success' %}var(--success-color){% else %}var(--danger-color){% endif %};
+              ">
+              {{ scan.status_message or scan.status }}
             </span>
           </div>
-          <div class="scan-status">
-            {% if scan.status == 'success' %}
-            <span class="status-success"
-              ><i class="fas fa-check-circle"></i
-            ></span>
-            {% else %}
-            <span class="status-error"
-              ><i class="fas fa-times-circle"></i
-            ></span>
-            {% endif %}
-          </div>
+          {% endfor %} {% else %}
+          <p style="text-align: center; opacity: 0.5; padding: 1rem">
+            No history.
+          </p>
+          {% endif %}
         </div>
-        {% endfor %}
       </div>
-      {% else %}
-      <p class="empty-state">No scan history yet.</p>
-      {% endif %}
     </div>
   </div>
 </div>
-
-<div id="notification" class="notification" style="display: none"></div>
 {% endblock %} {% block scripts %}
 <script>
+  // Tab Switcher Logic
   function openTab(evt, tabName) {
-    // Hide all tab contents
-    var tabContents = document.getElementsByClassName("tab-content");
-    for (var i = 0; i < tabContents.length; i++) {
-      tabContents[i].classList.remove("active");
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].classList.remove("active");
     }
-
-    // Remove active class from all buttons
-    var tabButtons = document.getElementsByClassName("tab-button");
-    for (var i = 0; i < tabButtons.length; i++) {
-      tabButtons[i].classList.remove("active");
+    tablinks = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].classList.remove("active");
     }
-
-    // Show the selected tab and mark button as active
     document.getElementById(tabName).classList.add("active");
     evt.currentTarget.classList.add("active");
   }
 
-  function switchDeadlineTab(evt, tabName) {
-    // Same as openTab but specifically for deadline tabs
-    var tabContents = document.querySelectorAll(".deadline-card .tab-content");
-    for (var i = 0; i < tabContents.length; i++) {
-      tabContents[i].classList.remove("active");
-    }
-
-    var tabButtons = document.querySelectorAll(".deadline-card .tab-button");
-    for (var i = 0; i < tabButtons.length; i++) {
-      tabButtons[i].classList.remove("active");
-    }
-
-    document.getElementById(tabName).classList.add("active");
-    evt.currentTarget.classList.add("active");
-  }
-
-  function filterDeadlines(days) {
-    // Get all filter buttons
-    const filterButtons = document.querySelectorAll(".filter-btn");
-    filterButtons.forEach((btn) => {
-      btn.classList.remove("active");
-      if (parseInt(btn.getAttribute("data-days")) === days) {
-        btn.classList.add("active");
-      }
-    });
-
-    // Get all deadline items
-    const deadlineItems = document.querySelectorAll(".deadline-item");
-    let ouslCount = 0;
-    let ruslCount = 0;
-
-    const now = new Date();
-    const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-    deadlineItems.forEach((item) => {
-      const deadlineDate = new Date(item.getAttribute("data-deadline-date"));
-      const lmsName = item.closest(".tab-content").id.includes("ousl")
-        ? "ousl"
-        : "rusl";
-
-      if (days === 0) {
-        // Show all upcoming deadlines
-        item.classList.remove("hidden");
-        if (lmsName === "ousl") ouslCount++;
-        else ruslCount++;
-      } else {
-        // Show only deadlines within specified days
-        if (deadlineDate <= thirtyDaysLater) {
-          item.classList.remove("hidden");
-          if (lmsName === "ousl") ouslCount++;
-          else ruslCount++;
-        } else {
-          item.classList.add("hidden");
-        }
-      }
-    });
-
-    // Update tab counts
-    document.getElementById("ousl-count").textContent = ouslCount;
-    document.getElementById("rusl-count").textContent = ruslCount;
-  }
-
-  function showNotification(message, type = "info") {
-    const notification = document.getElementById("notification");
-    notification.textContent = message;
-    notification.className = `notification notification-${type}`;
-    notification.style.display = "block";
+  // Toast System
+  function showToast(message, type = "info") {
+    const container = document.getElementById("toast-container");
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>${message}</span>
+                <i class="fas fa-times" style="cursor:pointer; opacity:0.7;" onclick="this.parentElement.parentElement.remove()"></i>
+            </div>
+        `;
+    container.appendChild(toast);
 
     setTimeout(() => {
-      notification.style.display = "none";
+      toast.style.opacity = "0";
+      setTimeout(() => toast.remove(), 500);
     }, 5000);
   }
 
   function triggerScan() {
-    showNotification("Starting scan... This may take a few minutes.", "info");
-
-    fetch("/api/scan", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
+    showToast("Starting scan... This may take a moment.", "info");
+    fetch("/api/scan", { method: "POST" })
+      .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          showNotification(data.message, "success");
+          showToast(data.message, "success");
           setTimeout(() => location.reload(), 2000);
         } else {
-          showNotification(data.message, "error");
+          showToast(data.message, "error");
         }
       })
-      .catch((error) => {
-        showNotification("Scan failed: " + error.message, "error");
-      });
+      .catch((err) => showToast("Error: " + err, "error"));
   }
 
   function syncCalendar() {
-    showNotification("Syncing calendar events...", "info");
-
-    fetch("/api/sync-calendar", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
+    showToast("Syncing calendar...", "info");
+    fetch("/api/sync-calendar", { method: "POST" })
+      .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          showNotification(data.message, "success");
-          setTimeout(() => location.reload(), 1500);
+          showToast(data.message, "success");
+          setTimeout(() => location.reload(), 2000);
         } else {
-          showNotification(data.message, "error");
+          showToast(data.message, "error");
         }
       })
-      .catch((error) => {
-        showNotification("Sync failed: " + error.message, "error");
-      });
+      .catch((err) => showToast("Error: " + err, "error"));
   }
 
-  function testEmail() {
-    showNotification("Sending test email...", "info");
-
-    fetch("/api/test-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+  // Auto-refresh stats every 5 minutes
+  setInterval(() => {
+    fetch("/api/stats")
       .then((response) => response.json())
       .then((data) => {
-        if (data.success) {
-          showNotification(data.message, "success");
-        } else {
-          showNotification(data.message, "error");
+        if (document.getElementById("new-activities-count")) {
+          document.getElementById("new-activities-count").textContent =
+            data.new_activities;
         }
-      })
-      .catch((error) => {
-        showNotification("Test failed: " + error.message, "error");
       });
-  }
-
-  function testNtfy() {
-    showNotification("Sending test mobile notification...", "info");
-
-    fetch("/api/test-ntfy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          showNotification(data.message, "success");
-        } else {
-          showNotification(data.message, "error");
-        }
-      })
-      .catch((error) => {
-        showNotification("Test failed: " + error.message, "error");
-      });
-  }
+  }, 300000);
 </script>
 {% endblock %}

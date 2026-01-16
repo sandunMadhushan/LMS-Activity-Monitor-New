@@ -4,35 +4,44 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}LMS Activity Monitor{% endblock %}</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Custom CSS -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='style.css') }}"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
   </head>
   <body>
     <nav class="navbar">
-      <div class="container">
+      <div class="nav-container">
         <div class="nav-brand">
-          <i class="fas fa-graduation-cap"></i>
+          <i class="fas fa-layer-group"></i>
           <span>LMS Monitor</span>
         </div>
         <ul class="nav-menu">
           <li>
             <a
               href="/"
-              class="{% if request.endpoint == 'index' %}active{% endif %}"
+              class="nav-link {% if request.endpoint == 'index' %}active{% endif %}"
             >
-              <i class="fas fa-home"></i> Dashboard
+              <i class="fas fa-chart-pie"></i> Dashboard
             </a>
           </li>
           <li>
             <a
               href="/courses"
-              class="{% if request.endpoint == 'courses' %}active{% endif %}"
+              class="nav-link {% if request.endpoint == 'courses' %}active{% endif %}"
             >
               <i class="fas fa-book"></i> Courses
             </a>
@@ -40,9 +49,9 @@
           <li>
             <a
               href="/activities"
-              class="{% if request.endpoint == 'activities' %}active{% endif %}"
+              class="nav-link {% if request.endpoint == 'activities' %}active{% endif %}"
             >
-              <i class="fas fa-tasks"></i> Activities
+              <i class="fas fa-list-check"></i> Activities
             </a>
           </li>
         </ul>
@@ -50,31 +59,18 @@
     </nav>
 
     <main class="main-content">
-      <div class="container">{% block content %}{% endblock %}</div>
+      <div id="toast-container" class="toast-container"></div>
+      {% block content %}{% endblock %}
     </main>
 
     <footer class="footer">
       <div class="container">
         <p>
-          &copy; 2025 LMS Activity Monitor | Helping you stay on top of your
-          coursework
+          &copy; 2025 LMS Activity Monitor | <i class="fas fa-code"></i> with
+          Glassmorphism
         </p>
       </div>
     </footer>
-
-    <script>
-      // Auto-refresh stats every 5 minutes
-      setInterval(() => {
-        fetch("/api/stats")
-          .then((response) => response.json())
-          .then((data) => {
-            if (document.getElementById("new-activities-count")) {
-              document.getElementById("new-activities-count").textContent =
-                data.new_activities;
-            }
-          });
-      }, 300000);
-    </script>
 
     {% block scripts %}{% endblock %}
   </body>
