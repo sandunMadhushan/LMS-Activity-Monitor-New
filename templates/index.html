@@ -219,14 +219,23 @@
             {% for deadline in upcoming_deadlines[:5] %}
             <div class="list-item" style="padding: 1rem">
               <div style="flex: 1">
-                <p style="
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.25rem;">
+                  <p style="
                     font-size: 0.8rem;
                     color: var(--warning-color);
-                    margin-bottom: 0.25rem;
+                    margin: 0;
                   ">
-                  <i class="far fa-calendar"></i> {{
-                  deadline.deadline_date|datetime('%b %d') }}
-                </p>
+                    <i class="far fa-calendar"></i> {{
+                    deadline.deadline_date|datetime('%b %d') }}
+                  </p>
+                  <span class="badge" style="
+                    font-size: 0.65rem; 
+                    padding: 0.15rem 0.5rem;
+                    background: {% if deadline.lms_name == 'OUSL' %}var(--ousl-new){% else %}var(--rusl-new){% endif %};
+                    color: white;
+                    border: none;
+                  ">{{ deadline.lms_name }}</span>
+                </div>
                 <h5 style="margin-bottom: 0.25rem">{{ deadline.title }}</h5>
                 <p style="font-size: 0.8rem; opacity: 0.7">
                   {{ deadline.course_name }}
