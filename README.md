@@ -1,6 +1,6 @@
 # LMS Activity Monitor
 
-A web-based system to monitor multiple Moodle LMS instances for new activities, assignments, and course content. Get notifications twice daily about any new additions to your courses. **Now deployed on Railway & Render with automated GitHub Actions scanning!**
+A web-based system to monitor multiple Moodle LMS instances for new activities, assignments, and course content. Get notifications twice daily about any new additions to your courses. **Now deployed on Render with automated GitHub Actions scanning!**
 
 ---
 
@@ -8,10 +8,9 @@ A web-based system to monitor multiple Moodle LMS instances for new activities, 
 
 | Platform | Status | Speed | URL |
 |----------|--------|-------|-----|
-| **Railway** | 🟢 Primary | ⚡ Fast | [lms-activity-monitor.up.railway.app](https://lms-activity-monitor.up.railway.app) |
-| **Render** | 🟢 Backup | 🔄 Reliable | [lms-activity-monitor.onrender.com](https://lms-activity-monitor.onrender.com) |
+| **Render** | 🟢 Primary | 🔄 Reliable | [lms-activity-monitor-new.onrender.com](https://lms-activity-monitor-new.onrender.com) |
 
-*Both deployments use the same database and are automatically updated via GitHub Actions!*
+*Deployment is automatically updated via GitHub Actions!*
 
 ---
 
@@ -32,16 +31,13 @@ A web-based system to monitor multiple Moodle LMS instances for new activities, 
 
 ### Live Dashboard
 
-**Two Deployments for Maximum Uptime:**
+**Live Deployment:**
 
-- **Primary (Railway)**: https://lms-activity-monitor.up.railway.app ⚡ (Fast & Reliable)
-- **Backup (Render)**: https://lms-activity-monitor.onrender.com 🔄 (Alternative)
-
-*Use whichever loads faster!*
+- **Render**: https://lms-activity-monitor-new.onrender.com 🔄
 
 ### Deployment Options
 
-1. **Production (Recommended)**: Deployed on Railway + Render + GitHub Actions
+1. **Production (Recommended)**: Deployed on Render + GitHub Actions
 2. **Local Development**: Run locally for testing
 
 ## 📦 Setup Instructions
@@ -151,23 +147,9 @@ The system uses GitHub Actions to automatically scan both Moodle instances twice
 
 ### 6. Cloud Deployment (Web Dashboard)
 
-The web dashboard is deployed on **Railway** and **Render** for 24/7 access:
+The web dashboard is deployed on **Render** for 24/7 access:
 
-#### Railway (Primary - Faster & More Reliable) ⚡
-
-1. **Visit**: https://railway.app
-2. **Deploy from GitHub**: Connect your repository
-3. **Configure**: Add environment variables (EMAIL_SENDER, EMAIL_PASSWORD, etc.)
-4. **Live URL**: https://lms-activity-monitor.up.railway.app
-
-**Benefits:**
-- ⚡ Fast cold starts (2-5 seconds)
-- ✅ Better uptime and reliability
-- 🚀 No sleep on free tier
-
-**See `docs/RAILWAY_QUICKSTART.md` for 5-minute setup guide.**
-
-#### Render (Backup) 🔄
+#### Render 🔄
 
 1. **Files already configured:**
    - `render.yaml` - Render service configuration
@@ -179,16 +161,16 @@ The web dashboard is deployed on **Railway** and **Render** for 24/7 access:
    - Render will auto-deploy from the `master` branch
    - No environment variables needed (uses database from GitHub)
 
-3. **Live URL**: https://lms-activity-monitor.onrender.com
+3. **Live URL**: https://lms-activity-monitor-new.onrender.com
 
 **Important Notes:**
-- ⚠️ Scanning is disabled on both platforms (Chrome/ChromeDriver not available)
+- ⚠️ Scanning is disabled on the platform (Chrome/ChromeDriver not available)
 - ✅ All scanning happens via GitHub Actions
 - ✅ Dashboard displays data from the GitHub-updated database
-- ✅ Calendar sync works on both platforms
-- ✅ Both platforms use the same database from GitHub
+- ✅ Calendar sync works
+- ✅ Uses the database from GitHub
 
-**See `docs/DEPLOYMENT_GUIDE.md` for Render setup and `docs/DEPLOYMENT_COMPARISON.md` for platform comparison.**
+**See `docs/DEPLOYMENT_GUIDE.md` for Render setup.**
 
 ### 7. Manual GitHub Actions Run
 
