@@ -1,77 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}LMS Activity Monitor{% endblock %}</title>
-    <!-- Google Fonts: Outfit -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <!-- Custom CSS -->
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='style.css') }}"
-    />
-  </head>
-  <body>
-    <nav class="navbar">
-      <div class="nav-container">
-        <div class="nav-brand">
-          <i class="fas fa-layer-group"></i>
-          <span>LMS Monitor</span>
-        </div>
-        <ul class="nav-menu">
-          <li>
-            <a
-              href="/"
-              class="nav-link {% if request.endpoint == 'index' %}active{% endif %}"
-            >
-              <i class="fas fa-chart-pie"></i> Dashboard
-            </a>
-          </li>
-          <li>
-            <a
-              href="/courses"
-              class="nav-link {% if request.endpoint == 'courses' %}active{% endif %}"
-            >
-              <i class="fas fa-book"></i> Courses
-            </a>
-          </li>
-          <li>
-            <a
-              href="/activities"
-              class="nav-link {% if request.endpoint == 'activities' %}active{% endif %}"
-            >
-              <i class="fas fa-list-check"></i> Activities
-            </a>
-          </li>
-        </ul>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}LMS Activity Monitor{% endblock %}</title>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <i class="fas fa-layer-group"></i>
+        <span>LMS Monitor</span>
       </div>
-    </nav>
 
-    <main class="main-content">
-      <div id="toast-container" class="toast-container"></div>
-      {% block content %}{% endblock %}
-    </main>
+      <button class="nav-toggle" id="navToggle">
+        <i class="fas fa-bars"></i>
+      </button>
 
-    <footer class="footer">
-      <div class="container">
-        <p>
-          &copy; 2025 LMS Activity Monitor | <i class="fas fa-code"></i> with
-          Glassmorphism
-        </p>
-      </div>
-    </footer>
+      <ul class="nav-menu" id="navMenu">
+        <li>
+          <a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+            <i class="fas fa-chart-pie"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="/courses" class="nav-link {% if request.endpoint == 'courses' %}active{% endif %}">
+            <i class="fas fa-book"></i> Courses
+          </a>
+        </li>
+        <li>
+          <a href="/activities" class="nav-link {% if request.endpoint == 'activities' %}active{% endif %}">
+            <i class="fas fa-list-check"></i> Activities
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
 
-    {% block scripts %}{% endblock %}
-  </body>
+  <script>
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
+
+    if (navToggle) {
+      navToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+      });
+    }
+  </script>
+
+  <main class="main-content">
+    <div id="toast-container" class="toast-container"></div>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>
+        &copy; 2025 LMS Activity Monitor | <i class="fas fa-code"></i> with
+        Glassmorphism
+      </p>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+
 </html>

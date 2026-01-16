@@ -386,11 +386,10 @@ If you encounter issues:
 
 ## 🚀 Recent Updates
 
+- **Recent Updates**
 - ✅ **PDF Reports** - Professional PDF reports with new activities emailed as attachments (ReportLab)
 - ✅ **Sri Lanka Time Commits** - Database commits now show correct Sri Lanka time (UTC+5:30)
 - ✅ **Python 3.13 Compatible** - Updated dependencies for latest Python version
-- ✅ **Railway Deployment** - Added fast & reliable backup deployment platform!
-- ✅ **Dual Platform Strategy** - Deployed on both Railway (primary) and Render (backup)
 - ✅ **Mobile Push Notifications** - Get instant alerts on your phone via Ntfy.sh!
 - ✅ **Dual Notification System** - Both email and mobile notifications
 - ✅ GitHub Actions scheduled for 9 AM & 9 PM Sri Lanka Time
