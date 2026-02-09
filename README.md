@@ -6,11 +6,11 @@ A web-based system to monitor multiple Moodle LMS instances for new activities, 
 
 ## 🌐 Live Deployments
 
-| Platform | Status | Speed | URL |
-|----------|--------|-------|-----|
+| Platform   | Status     | Speed       | URL                                                                                    |
+| ---------- | ---------- | ----------- | -------------------------------------------------------------------------------------- |
 | **Render** | 🟢 Primary | 🔄 Reliable | [lms-activity-monitor-new.onrender.com](https://lms-activity-monitor-new.onrender.com) |
 
-*Deployment is automatically updated via GitHub Actions!*
+_Deployment is automatically updated via GitHub Actions!_
 
 ---
 
@@ -26,6 +26,10 @@ A web-based system to monitor multiple Moodle LMS instances for new activities, 
 - 📅 **Calendar Integration**: Syncs deadlines to your calendar automatically
 - ⏰ **Deadline Reminders**: Get notified about upcoming deadlines via email and mobile
 - 🔐 **Secure**: Credentials stored as GitHub Secrets
+
+## 📝 Article
+
+- [Never miss a deadline again: How I automated my university LMS with Python + GitHub Actions](https://medium.com/@sandunmadhushan/never-miss-a-deadline-again-how-i-automated-my-university-lms-with-python-github-actions-d729fe81e80c)
 
 ## 🚀 Quick Start
 
@@ -122,7 +126,6 @@ The system uses GitHub Actions to automatically scan both Moodle instances twice
 1. **Fork this repository**
 2. **Go to Settings → Secrets and variables → Actions**
 3. **Add the following secrets:**
-
    - `OUSL_USERNAME` - Your OUSL Moodle username
    - `OUSL_PASSWORD` - Your OUSL Moodle password
    - `RUSL_USERNAME` - Your RUSL Moodle username
@@ -164,6 +167,7 @@ The web dashboard is deployed on **Render** for 24/7 access:
 3. **Live URL**: https://lms-activity-monitor-new.onrender.com
 
 **Important Notes:**
+
 - ⚠️ Scanning is disabled on the platform (Chrome/ChromeDriver not available)
 - ✅ All scanning happens via GitHub Actions
 - ✅ Dashboard displays data from the GitHub-updated database
@@ -341,18 +345,21 @@ python tests/test_course_names.py
 ### Cloud Deployment Issues
 
 **Railway:**
+
 - Check Railway dashboard → Deployments → View Logs
 - Verify environment variables are set in Variables tab
 - Railway uses dynamic PORT (auto-detected by app)
 - Scan button disabled (correct - GitHub Actions handles this)
 
 **Render:**
+
 - Check Render dashboard logs for errors
 - Verify `runtime.txt` specifies Python 3.11.9
 - Database is tracked in git (not blocked by .gitignore)
 - Scan button disabled (correct - GitHub Actions handles this)
 
 **If Both Are Slow:**
+
 - Use whichever loads faster at the moment
 - Both platforms use the same database from GitHub
 - Consider running locally: `python app.py`
@@ -405,12 +412,14 @@ If you encounter issues:
 For more detailed information, see the `docs/` folder:
 
 ### Deployment Guides:
+
 - **`RAILWAY_QUICKSTART.md`** - Railway deployment (5-minute setup) ⚡
 - **`RAILWAY_DEPLOYMENT.md`** - Complete Railway deployment guide
 - **`DEPLOYMENT_COMPARISON.md`** - Railway vs Render vs other platforms
 - **`DEPLOYMENT_GUIDE.md`** - Complete Render + GitHub Actions setup
 
 ### Feature Guides:
+
 - **`NTFY_SETUP_GUIDE.md`** - Mobile push notifications setup (5-minute guide)
 - **`GETTING_STARTED.md`** - New user guide
 - **`SETUP_GUIDE.md`** - Detailed setup walkthrough
