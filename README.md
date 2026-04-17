@@ -30,6 +30,7 @@ _Deployment is automatically updated via GitHub Actions!_
 ## 📝 Article
 
 - [Never miss a deadline again: How I automated my university LMS with Python + GitHub Actions](https://medium.com/@sandunmadhushan/never-miss-a-deadline-again-how-i-automated-my-university-lms-with-python-github-actions-d729fe81e80c)
+- [From Render to AWS EC2: How I made my LMS automation fully always-on](https://medium.com/@sandunmadhushan/from-render-to-aws-ec2-how-i-made-my-lms-automation-fully-always-on-0a2b7ae8c3c1)
 
 ## 🚀 Quick Start
 
