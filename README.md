@@ -1,14 +1,14 @@
 # LMS Activity Monitor
 
-A web-based system to monitor multiple Moodle LMS instances for new activities, assignments, and course content. Get notifications twice daily about any new additions to your courses. **Now deployed on Render with automated GitHub Actions scanning!**
+A web-based system to monitor multiple Moodle LMS instances for new activities, assignments, and course content. Get notifications twice daily about any new additions to your courses. **Now deployed on AWS EC2 with automated GitHub Actions scanning and deployment.**
 
 ---
 
 ## 🌐 Live Deployments
 
-| Platform   | Status     | Speed       | URL                                                                                    |
-| ---------- | ---------- | ----------- | -------------------------------------------------------------------------------------- |
-| **Render** | 🟢 Primary | 🔄 Reliable | [lms-activity-monitor-new.onrender.com](https://lms-activity-monitor-new.onrender.com) |
+| Platform    | Status     | Type                  | URL                                     |
+| ----------- | ---------- | --------------------- | --------------------------------------- |
+| **AWS EC2** | 🟢 Primary | Always-on (no sleep) | [lms.madhushan.me](https://lms.madhushan.me) |
 
 _Deployment is automatically updated via GitHub Actions!_
 
@@ -20,7 +20,7 @@ _Deployment is automatically updated via GitHub Actions!_
 - 📧 **Email Notifications**: Get detailed notifications about new content
 - 📱 **Mobile Push Notifications**: Get instant alerts on your phone via [Ntfy.sh](https://ntfy.sh) (free, no registration!)
 - 📄 **PDF Reports**: Beautiful PDF reports with new activities emailed as attachments
-- 🌐 **Web Dashboard**: View all changes in a user-friendly interface (deployed on Railway & Render)
+- 🌐 **Web Dashboard**: View all changes in a user-friendly interface (deployed on AWS EC2)
 - 🔄 **Automated Checks**: Runs twice daily (9 AM and 9 PM Sri Lanka Time) via GitHub Actions
 - 📊 **Activity Tracking**: Monitors assignments, resources, forums, quizzes, and more
 - 📅 **Calendar Integration**: Syncs deadlines to your calendar automatically
@@ -35,13 +35,13 @@ _Deployment is automatically updated via GitHub Actions!_
 
 ### Live Dashboard
 
-**Live Deployment:**
+**Live Deployment (AWS):**
 
-- **Render**: https://lms-activity-monitor-new.onrender.com 🔄
+- **AWS EC2**: https://lms.madhushan.me ✅
 
 ### Deployment Options
 
-1. **Production (Recommended)**: Deployed on Render + GitHub Actions
+1. **Production (Recommended)**: Deployed on AWS EC2 + GitHub Actions
 2. **Local Development**: Run locally for testing
 
 ## 📦 Setup Instructions
@@ -150,31 +150,34 @@ The system uses GitHub Actions to automatically scan both Moodle instances twice
 
 ### 6. Cloud Deployment (Web Dashboard)
 
-The web dashboard is deployed on **Render** for 24/7 access:
+This project was migrated from Render to AWS because always-on hosting was needed without free-tier sleeping behavior.
 
-#### Render 🔄
+#### AWS EC2 (Current Production) ☁️
 
-1. **Files already configured:**
-   - `render.yaml` - Render service configuration
-   - `runtime.txt` - Python 3.11.9 runtime
-   - `requirements.txt` - Updated with gunicorn and production dependencies
+1. **Server stack:**
+   - Ubuntu EC2 instance
+   - Nginx reverse proxy (`lms.madhushan.me` → `127.0.0.1:5000`)
+   - PM2 process manager for always-on service
+   - Gunicorn running Flask app
 
-2. **Deploy to Render:**
-   - Connect your GitHub repository to Render
-   - Render will auto-deploy from the `master` branch
-   - No environment variables needed (uses database from GitHub)
+2. **Automated deployment on every push:**
+   - Workflow: `.github/workflows/deploy-ec2.yml`
+   - Trigger: push to `master` / `main` (also supports manual dispatch)
+   - Action: SSH into EC2 → pull latest code → install requirements → restart PM2
 
-3. **Live URL**: https://lms-activity-monitor-new.onrender.com
+3. **Automated scanning (unchanged):**
+   - Workflow: `.github/workflows/monitor.yml`
+   - Runs at 9:00 AM and 9:00 PM Sri Lanka Time
+   - Updates `lms_data.db` in the repository
+
+4. **Live URL:** https://lms.madhushan.me
 
 **Important Notes:**
 
-- ⚠️ Scanning is disabled on the platform (Chrome/ChromeDriver not available)
-- ✅ All scanning happens via GitHub Actions
-- ✅ Dashboard displays data from the GitHub-updated database
-- ✅ Calendar sync works
-- ✅ Uses the database from GitHub
-
-**See `docs/DEPLOYMENT_GUIDE.md` for Render setup.**
+- ✅ Daily scan jobs run via GitHub Actions
+- ✅ EC2 serves dashboard 24/7 without sleeping
+- ✅ Pushes to repository can deploy immediately via `deploy-ec2.yml`
+- ✅ Optional cron pull script can be kept as fallback
 
 ### 7. Manual GitHub Actions Run
 
@@ -195,12 +198,13 @@ Go to Actions → LMS Monitor → Run workflow
 9. **Database Update**: Commits updated database back to GitHub repository with Sri Lanka time (UTC+5:30)
 10. **Artifact Upload**: Stores database as workflow artifact (90-day retention)
 
-### Web Dashboard (Render)
+### Web Dashboard (AWS EC2)
 
-1. **Always Online**: Hosted on Render.com for 24/7 access
+1. **Always Online**: Hosted on AWS EC2 for 24/7 access
 2. **Real-time Data**: Uses the latest database from GitHub
 3. **Calendar Sync**: Syncs deadlines to calendar events (Google Calendar compatible)
-4. **Read-only Scanning**: Scan button disabled (handled by GitHub Actions)
+4. **Manual Scan Support**: Optional manual scan from web UI when Chrome/ChromeDriver and credentials are set on EC2
+5. **Auto Deployment**: Pushes deploy via GitHub Actions SSH workflow
 
 ## 📊 What Gets Monitored
 
@@ -231,7 +235,8 @@ Go to Actions → LMS Monitor → Run workflow
 lms-scraper/
 ├── .github/
 │   └── workflows/
-│       └── monitor.yml          # GitHub Actions workflow for automated scanning
+│       ├── monitor.yml          # GitHub Actions workflow for automated scanning
+│       └── deploy-ec2.yml       # GitHub Actions workflow for EC2 auto-deploy
 ├── docs/                        # 📚 All documentation
 │   ├── README.md               # Documentation index
 │   ├── GETTING_STARTED.md      # Complete getting started guide
@@ -344,25 +349,15 @@ python tests/test_course_names.py
 
 ### Cloud Deployment Issues
 
-**Railway:**
+**AWS EC2 + Nginx + PM2:**
 
-- Check Railway dashboard → Deployments → View Logs
-- Verify environment variables are set in Variables tab
-- Railway uses dynamic PORT (auto-detected by app)
-- Scan button disabled (correct - GitHub Actions handles this)
-
-**Render:**
-
-- Check Render dashboard logs for errors
-- Verify `runtime.txt` specifies Python 3.11.9
-- Database is tracked in git (not blocked by .gitignore)
-- Scan button disabled (correct - GitHub Actions handles this)
-
-**If Both Are Slow:**
-
-- Use whichever loads faster at the moment
-- Both platforms use the same database from GitHub
-- Consider running locally: `python app.py`
+- Check process status: `pm2 status`
+- Check app logs: `pm2 logs lms-monitor --lines 100`
+- Check Nginx config test: `sudo nginx -t`
+- Reload Nginx after config changes: `sudo systemctl reload nginx`
+- Verify DNS points to EC2 public IP
+- Verify SSL cert status: `sudo certbot certificates`
+- If deploy workflow fails, verify GitHub secrets: `EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY`
 
 ### Calendar Sync Issues
 
@@ -385,7 +380,7 @@ python tests/test_course_names.py
 If you encounter issues:
 
 1. Check the GitHub Actions logs (Actions tab)
-2. Review Railway or Render deployment logs (dashboard)
+2. Review EC2 deployment and PM2 logs
 3. Check error messages in email notifications
 4. Ensure all dependencies are installed (`requirements.txt`)
 5. Verify Moodle sites are accessible from your network
@@ -403,7 +398,8 @@ If you encounter issues:
 - ✅ Added calendar sync functionality
 - ✅ Automated deadline reminders (7 days in advance) via email and mobile
 - ✅ Fixed database tracking in git
-- ✅ Disabled scan button on Render (automated via GitHub Actions)
+- ✅ Migrated web dashboard hosting from Render to AWS EC2
+- ✅ Added auto-deploy workflow (`deploy-ec2.yml`) for push-to-EC2 updates
 - ✅ Added write permissions for workflow commits
 - ✅ Removed artifact download step (using git-tracked database)
 
@@ -413,10 +409,9 @@ For more detailed information, see the `docs/` folder:
 
 ### Deployment Guides:
 
-- **`RAILWAY_QUICKSTART.md`** - Railway deployment (5-minute setup) ⚡
-- **`RAILWAY_DEPLOYMENT.md`** - Complete Railway deployment guide
-- **`DEPLOYMENT_COMPARISON.md`** - Railway vs Render vs other platforms
-- **`DEPLOYMENT_GUIDE.md`** - Complete Render + GitHub Actions setup
+- **`DEPLOYMENT_GUIDE.md`** - Cloud deployment guide
+- **`.github/workflows/deploy-ec2.yml`** - Push-to-EC2 deployment workflow
+- **`.github/workflows/monitor.yml`** - Scheduled scanning workflow
 
 ### Feature Guides:
 
